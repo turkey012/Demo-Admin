@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Tahoma; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .tabs { margin-top: 20px; display: flex; gap: 10px; }
+        .tab-btn { flex:1; padding: 15px; font-size: 16px; font-weight: bold; background: #bdc3c7; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+        .tab-btn.active { background: #e74c3c; color: white; }
+        .tab-content { display: none; margin-top: 20px; }
+        .tab-content.active { display: block; }
+        
+        /* Orders Style */
+        .order-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-right: 5px solid #e74c3c;}
+        .order-card.done { border-right-color: #27ae60; opacity: 0.7;}
+        
+        /* Menu Control Style */
+        .menu-table { width: 100%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-collapse: collapse;}
+        .menu-table th, .menu-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        .menu-table th { background: #34495e; color: white; }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #27ae60; }
+        input:checked + .slider:before { transform: translateX(26px); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>⚙️ لوحة التحكم الذكية</h2>
+        <button onclick="fetchOrders()" style="padding: 10px 20px; border-radius: 5px; cursor:pointer;">تحديث 🔄</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('orders', this)">🔔 الطلبات الحية</button>
+        <button class="tab-btn" onclick="switchTab('menu-control', this)">🧾 التحكم في المنيو</button>
+    </div>
+
+    <!-- شاشة الأوردرات -->
+    <div id="orders" class="tab-content active">
+        <div id="orders-container"><h3 style="text-align: center;">جاري التحميل...</h3></div>
+    </div>
+
+    <!-- شاشة التحكم في المنيو -->
+    <div id="menu-control" class="tab-content">
+        <table class="menu-table">
+            <thead><tr><th>الصنف</th><th>السعر</th><th>متاح للزبائن؟</th></tr></thead>
+            <tbody id="menu-control-container"></tbody>
+        </table>
+    </div>
+
+    <!-- صوت الجرس -->
+    <audio id="ring" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <script>
+        // ⚠️ حط لينك الـ Web App بتاعك هنا
+        const API_URL = "https://script.google.com/macros/s/AKfycbz63wegGtUvTXD1qWPLM_UV1w_hW24jebpz350MvMjsx_kBCuXLILQyF1NHvek8bcLvhA/exec"; 
+        let lastOrderCount = 0;
+
+        function switchTab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id === 'menu-control') fetchAdminMenu();
+        }
+
+        // جلب الأوردرات وعرضها
+        function fetchOrders() {
+            fetch(API_URL + "?action=getOrders").then(res => res.json()).then(data => {
+                let html = "";
+                let newOrders = data.filter(o => o.status.includes("جديد"));
+                
+                // رن الجرس لو في أوردر جديد
+                if (data.length > lastOrderCount && newOrders.length > 0) {
+                    document.getElementById('ring').play();
+                }
+                lastOrderCount = data.length;
+
+                data.forEach(order => {
+                    let isDone = !order.status.includes("جديد");
+                    html += `
+                    <div class="order-card ${isDone ? 'done' : ''}">
+                        <div style="display:flex; justify-content:space-between;">
+                            <h3>رقم: ${order.orderId} | ترابيزة: ${order.table}</h3>
+                            <span style="font-weight:bold; color: ${isDone?'green':'red'}">${order.status}</span>
+                        </div>
+                        <p style="white-space: pre-line; background: #f9f9f9; padding: 10px; border-radius:5px;">${order.details}</p>
+                        <h4>الإجمالي: ${order.total} ج.م</h4>
+                        <small style="color:#7f8c8d;">الوقت: ${order.date}</small>
+                    </div>`;
+                });
+                document.getElementById('orders-container').innerHTML = html || "<h3 style='text-align:center;'>لا توجد طلبات</h3>";
+            });
+        }
+
+        // جلب المنيو للتحكم فيه
+        function fetchAdminMenu() {
+            document.getElementById('menu-control-container').innerHTML = "<tr><td colspan='3'>جاري التحميل...</td></tr>";
+            fetch(API_URL + "?action=getMenu").then(res => res.json()).then(data => {
+                let html = "";
+                data.forEach(item => {
+                    let isChecked = item.available ? "checked" : "";
+                    html += `
+                    <tr>
+                        <td style="font-weight:bold;">${item.name}</td>
+                        <td>${item.price} ج.م</td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" ${isChecked} onchange="toggleAvailability(${item.row}, this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('menu-control-container').innerHTML = html;
+            });
+        }
+
+        // تغيير حالة الصنف (متاح / غير متاح)
+        function toggleAvailability(row, isAvailable) {
+            let status = isAvailable ? "true" : "false";
+            fetch(`${API_URL}?action=toggleMenu&row=${row}&status=${status}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log("تم التحديث");
+            });
+        }
+
+        // تشغيل أوتوماتيك
+        window.onload = fetchOrders;
+        setInterval(fetchOrders, 10000); // تحديث الأوردرات كل 10 ثواني
+    </script>
+</body>
+</html>
