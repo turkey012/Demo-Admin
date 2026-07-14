@@ -3,58 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cashier POS System</title>
+    <title>Cashier POS System - Pro</title>
     <style>
-        :root { --bg: #f0f3f6; --side-bg: #e2e8f0; --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; }
+        :root { --bg: #f0f3f6; --side-bg: #e2e8f0; --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --info: #2980b9; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar (زي الصورة اللي بعتها) */
-        .sidebar { width: 100px; background: var(--side-bg); border-left: 2px solid #cbd5e1; display: flex; flex-direction: column; padding: 10px 0; overflow-y: auto; z-index: 10;}
-        .side-btn { background: #f8fafc; border: 1px solid #94a3b8; padding: 15px 5px; margin: 5px 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; color: var(--primary); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.1); transition: 0.2s;}
-        .side-btn:hover { background: #e2e8f0; }
+        /* Sidebar */
+        .sidebar { width: 105px; background: var(--side-bg); border-left: 2px solid #cbd5e1; display: flex; flex-direction: column; padding: 15px 0; overflow-y: auto; z-index: 10;}
+        .side-btn { background: #f8fafc; border: 1px solid #94a3b8; padding: 15px 5px; margin: 5px 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px; color: var(--primary); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s;}
+        .side-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .side-btn.active { background: #cbd5e1; border-color: #64748b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
         .side-btn span.icon { font-size: 24px; }
 
+        /* End of Day Button */
+        .end-day-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .end-day-btn:hover { background: linear-gradient(135deg, #c0392b, #a53125); color: white;}
+
         /* Main Content */
-        .main-content { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; }
-        .stats-bar { background: var(--primary); color: white; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 16px;}
+        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
         
+        /* Top Bar & Reload */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .reload-btn { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+        .reload-btn:hover { background: #1a252f; transform: scale(1.05); }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         /* Compact Orders Grid */
-        .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-        .order-card { background: white; padding: 12px; border-radius: 8px; border-top: 4px solid var(--danger); font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;}
-        .order-card h4 { margin: 0 0 8px 0; font-size: 15px; display: flex; justify-content: space-between;}
-        .order-card .details { background: #f8fafc; padding: 8px; border-radius: 4px; max-height: 70px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 10px; border: 1px solid #e2e8f0;}
+        .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .order-card { background: white; padding: 15px; border-radius: 10px; border-top: 5px solid var(--info); font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between;}
+        .order-card h4 { margin: 0 0 10px 0; font-size: 15px; display: flex; justify-content: space-between;}
+        .order-card .details { background: #f8fafc; padding: 10px; border-radius: 6px; max-height: 80px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 15px; border: 1px solid #e2e8f0;}
         
-        .action-btns { display: flex; gap: 5px; margin-top: auto;}
-        .btn-sm { flex: 1; padding: 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .action-btns { display: flex; gap: 8px; margin-top: auto;}
+        .btn-sm { flex: 1; padding: 10px; font-size: 13px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s;}
+        .btn-sm:hover { opacity: 0.9; }
         .btn-done { background: var(--success); }
         .btn-cancel { background: var(--danger); }
 
-        /* List View (سجل اليوم) */
-        .list-item { background: white; padding: 15px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; transition: 0.2s;}
-        .list-item:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; color: white; }
+        /* Stats Dashboard */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 10px;}
+        .stat-card { background: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary);}
+        .stat-card h3 { margin: 0 0 10px 0; color: #7f8c8d; font-size: 16px; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: var(--primary); }
+        .stat-card .sub-value { font-size: 14px; color: #95a5a6; margin-top: 5px; }
 
-        /* Modal (نافذة تفاصيل الأوردر) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 350px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .close-modal { background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; float: left; margin-top: 15px;}
+        /* List View */
+        .list-item { background: white; padding: 15px 20px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .list-item:hover { background: #f1f5f9; transform: translateX(-5px); }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; color: white; }
 
-        /* Menu Table */
-        .menu-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; border-collapse: collapse; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-        .menu-table th, .menu-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        .menu-table th { background: var(--primary); color: white; }
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 350px; max-width: 90%; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center;}
+        .modal-input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; text-align: center;}
+        .btn-modal { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; color: white; margin: 5px; width: 45%;}
     </style>
 </head>
 <body>
 
-    <!-- الشريط الجانبي (Sidebar) -->
+    <!-- الشريط الجانبي -->
     <div class="sidebar">
         <div class="side-btn active" onclick="switchTab('active-orders', this)">
             <span class="icon">🛎️</span> الطلبات
+        </div>
+        <div class="side-btn" onclick="switchTab('stats-dashboard', this)">
+            <span class="icon">📊</span> الإحصائيات
         </div>
         <div class="side-btn" onclick="switchTab('list-orders', this)">
             <span class="icon">📋</span> السجل
@@ -62,219 +77,280 @@
         <div class="side-btn" onclick="switchTab('canceled-orders', this)">
             <span class="icon">❌</span> الملغية
         </div>
-        <div class="side-btn" onclick="switchTab('menu-control', this)">
-            <span class="icon">🧾</span> المنيو
-        </div>
-        <div style="flex-grow: 1;"></div> <!-- مسافة فاضية -->
-        <div class="side-btn" style="background:#fef2f2; border-color:#fca5a5; color:#dc2626;" onclick="endShift()">
-            <span class="icon">🏁</span> تقفيل الشيفت
+        <div style="flex-grow: 1;"></div>
+        <div class="side-btn end-day-btn" onclick="endShift()">
+            <span class="icon">🌙</span> الانتهاء من اليوم
         </div>
     </div>
 
     <!-- المحتوى الرئيسي -->
     <div class="main-content">
-        <!-- الإحصائيات العلوية -->
-        <div class="stats-bar">
-            <span>مبيعات الدرج اليوم: <span id="stat-revenue" style="color:#f1c40f;">0</span> ج.م</span>
-            <span>إجمالي الأوردرات: <span id="stat-count">0</span> أوردر</span>
-            <button onclick="fetchOrders()" style="background:#34495e; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">تحديث 🔄</button>
+        <!-- الشريط العلوي (Reload) -->
+        <div class="top-bar">
+            <h2 id="page-title" style="margin: 0; color: var(--primary);">شاشة الكاشير</h2>
+            <button class="reload-btn" onclick="fetchOrders()">
+                <span style="font-size: 18px;">↻</span> Reload
+            </button>
         </div>
 
-        <!-- 1. شاشة الطلبات الحالية (Compact) -->
+        <!-- 1. شاشة الطلبات الحالية -->
         <div id="active-orders" class="tab-content active">
             <div class="orders-grid" id="active-container">
                 <h3 style="grid-column: 1 / -1; text-align: center;">جاري التحميل... ⏳</h3>
             </div>
         </div>
 
-        <!-- 2. شاشة السجل (List) -->
+        <!-- 2. شاشة الإحصائيات -->
+        <div id="stats-dashboard" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card" style="border-color: var(--primary);">
+                    <h3>إجمالي المبيعات (نقدية + فيزا)</h3>
+                    <div class="value" id="stat-total-money">0 ج.م</div>
+                    <div class="sub-value">من إجمالي <span id="stat-total-count">0</span> أوردر</div>
+                </div>
+                <div class="stat-card" style="border-color: var(--success);">
+                    <h3>مبيعات الكاش 💵</h3>
+                    <div class="value" id="stat-cash-money">0 ج.م</div>
+                    <div class="sub-value">عدد الأوردرات: <span id="stat-cash-count">0</span></div>
+                </div>
+                <div class="stat-card" style="border-color: var(--info);">
+                    <h3>مبيعات الفيزا 💳</h3>
+                    <div class="value" id="stat-visa-money">0 ج.م</div>
+                    <div class="sub-value">عدد الأوردرات: <span id="stat-visa-count">0</span></div>
+                </div>
+                <div class="stat-card" style="border-color: var(--danger);">
+                    <h3>الأوردرات الملغية ❌</h3>
+                    <div class="value" id="stat-cancel-count">0</div>
+                    <div class="sub-value">لمراجعة الأسباب افتح سجل الملغية</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. شاشة السجل -->
         <div id="list-orders" class="tab-content">
-            <h3 style="margin-top:0;">📋 كل أوردرات الشيفت الحالي</h3>
             <div id="list-container"></div>
         </div>
 
-        <!-- 3. شاشة الملغية -->
+        <!-- 4. شاشة الملغية -->
         <div id="canceled-orders" class="tab-content">
-            <h3 style="margin-top:0; color:#e74c3c;">❌ الأوردرات الملغية</h3>
             <div id="canceled-container"></div>
         </div>
-
-        <!-- 4. شاشة التحكم في المنيو -->
-        <div id="menu-control" class="tab-content">
-            <table class="menu-table">
-                <thead><tr><th>الصنف</th><th>السعر</th><th>متاح؟</th></tr></thead>
-                <tbody id="menu-control-container"></tbody>
-            </table>
-        </div>
     </div>
 
-    <!-- نافذة تفاصيل الأوردر (Modal) -->
-    <div id="orderModal" class="modal">
+    <!-- نافذة تقفيل الأوردر (كاش أو فيزا) -->
+    <div id="paymentModal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title" style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">تفاصيل الطلب</h3>
-            <div id="modal-body" style="font-size: 14px; line-height: 1.6;"></div>
-            <button class="close-modal" onclick="closeModal()">إغلاق</button>
-            <div style="clear: both;"></div>
+            <h3 style="margin-top:0; color:#2c3e50;">طريقة الدفع؟</h3>
+            <p>اختر طريقة تحصيل الأوردر <span id="pay-order-id" style="font-weight:bold;"></span></p>
+            <button class="btn-modal" style="background:var(--success);" onclick="submitPayment('كاش')">💵 كاش</button>
+            <button class="btn-modal" style="background:var(--info);" onclick="submitPayment('فيزا')">💳 فيزا</button>
+            <br>
+            <button class="btn-modal" style="background:#95a5a6; width:92%; margin-top:15px;" onclick="closeModals()">تراجع</button>
         </div>
     </div>
 
-    <audio id="ring" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <!-- نافذة إلغاء الأوردر (باسوورد وسبب) -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--danger);">إلغاء الأوردر ❌</h3>
+            <p>لإلغاء أوردر <span id="cancel-order-id" style="font-weight:bold;"></span> يرجى إدخال البيانات</p>
+            <input type="password" id="cancel-password" class="modal-input" placeholder="كلمة مرور الإلغاء">
+            <input type="text" id="cancel-reason" class="modal-input" placeholder="سبب الإلغاء (إجباري)">
+            <button class="btn-modal" style="background:var(--danger); width:92%; margin-top:10px;" onclick="submitCancel()">تأكيد الإلغاء</button>
+            <button class="btn-modal" style="background:#95a5a6; width:92%;" onclick="closeModals()">تراجع</button>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل الأوردر -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content" style="text-align: right;">
+            <h3 id="modal-title" style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">تفاصيل الطلب</h3>
+            <div id="modal-body" style="font-size: 15px; line-height: 1.8;"></div>
+            <button class="btn-modal" style="background:#34495e; width:100%; margin-top:15px;" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
 
     <script>
         // ⚠️ حط لينك الـ Web App بتاعك هنا
-        const API_URL = "https://script.google.com/macros/s/AKfycbz_CqxzDRnWNktco9kEcG21WmvmKw_YtD68gUiGCWhDDvuHPEHi_JkmAmDgUXmxfKnhBA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbx6qB9sWTInhWVhTt1lA9Kv2CrnKbx9LtYRcQCd5_nCWDVqe4r4v0SGE-CGY8Bbn6Kvkg/exec"; 
         
+        // ⚠️ باسوورد الإلغاء (تقدر تغيره)
+        const CANCEL_PASSWORD = "1234";
+
         let allOrders = [];
-        let lastOrderCount = 0;
+        let currentRow = null; // بيحفظ رقم الصف اللي شغالين عليه
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
-            if(id === 'menu-control') fetchAdminMenu();
+            
+            // تغيير العنوان فوق
+            const titles = {
+                'active-orders': 'شاشة الكاشير - الطلبات الحالية',
+                'stats-dashboard': 'لوحة الإحصائيات اليومية',
+                'list-orders': 'سجل الأوردرات المغلقة',
+                'canceled-orders': 'سجل الأوردرات الملغية'
+            };
+            document.getElementById('page-title').innerText = titles[id];
         }
 
         function fetchOrders() {
+            let btn = document.querySelector('.reload-btn');
+            btn.innerHTML = "⏳ Loading...";
             fetch(API_URL + "?action=getOrders").then(res => res.json()).then(data => {
                 allOrders = data;
                 renderDashboard();
-                
-                // تشغيل الجرس لو في أوردر "جديد"
-                let newOrders = data.filter(o => o.status.includes("جديد"));
-                if (data.length > lastOrderCount && newOrders.length > 0) {
-                    document.getElementById('ring').play();
-                }
-                lastOrderCount = data.length;
-            }).catch(e => console.log("Error loading orders"));
+                btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload";
+            }).catch(e => {
+                btn.innerHTML = "❌ Error";
+                setTimeout(()=> btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload", 2000);
+            });
         }
 
         function renderDashboard() {
-            let activeHtml = "";
-            let listHtml = "";
-            let canceledHtml = "";
-            let revenue = 0;
-            let count = 0;
+            let activeHtml = "", listHtml = "", canceledHtml = "";
+            let stats = { totalMoney: 0, totalCount: 0, cashMoney: 0, cashCount: 0, visaMoney: 0, visaCount: 0, cancelCount: 0 };
 
             allOrders.forEach(order => {
                 let isCanceled = order.status.includes("ملغي");
                 let isClosed = order.status.includes("مقفول") || order.status.includes("دفع");
                 let isActive = !isCanceled && !isClosed;
+                let val = parseFloat(order.total) || 0;
 
-                // 1. حساب فلوس الدرج (للأوردرات اللي اتقفلت أو اتدفعت بس)
-                if (isClosed) {
-                    revenue += parseFloat(order.total) || 0;
+                // حساب الإحصائيات
+                if (isCanceled) {
+                    stats.cancelCount++;
+                } else if (isClosed) {
+                    stats.totalCount++;
+                    stats.totalMoney += val;
+                    if (order.paymentMethod === "كاش") { stats.cashCount++; stats.cashMoney += val; }
+                    else if (order.paymentMethod === "فيزا") { stats.visaCount++; stats.visaMoney += val; }
                 }
-                if (!isCanceled) count++;
 
-                // 2. تصميم الكارت الصغير (الطلبات الحالية)
+                // الكارت الصغير
                 if (isActive) {
                     activeHtml += `
                     <div class="order-card">
                         <h4>${order.orderId} <span style="font-size:12px; color:#e74c3c;">${order.status}</span></h4>
-                        <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 5px;">ترابيزة: ${order.table} | ${order.date.split(',')[1]}</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-bottom: 5px;">📍 ترابيزة: ${order.table}</div>
                         <div class="details">${order.details}</div>
-                        <div style="font-weight:bold; margin-bottom:10px;">السعر: ${order.total} ج.م</div>
+                        <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">${order.total} ج.م</div>
                         <div class="action-btns">
-                            <button class="btn-sm btn-done" onclick="updateOrderStatus(${order.row}, 'مقفول ✅')">تقفيل نقدية ✅</button>
-                            <button class="btn-sm btn-cancel" onclick="updateOrderStatus(${order.row}, 'ملغي ❌')">إلغاء</button>
+                            <button class="btn-sm btn-done" onclick="openPaymentModal(${order.row}, '${order.orderId}')">تقفيل ✅</button>
+                            <button class="btn-sm btn-cancel" onclick="openCancelModal(${order.row}, '${order.orderId}')">إلغاء ❌</button>
                         </div>
                     </div>`;
                 }
 
-                // 3. تصميم السجل (ليست الأوردرات)
+                // الليستة
                 let badgeColor = isCanceled ? "#e74c3c" : (isClosed ? "#27ae60" : "#f39c12");
+                let extraInfo = isCanceled ? `السبب: ${order.cancelReason}` : `دفع: ${order.paymentMethod}`;
                 let listItem = `
-                    <div class="list-item" onclick="openModal('${order.orderId}')">
+                    <div class="list-item" onclick="openOrderDetails('${order.orderId}')">
                         <div>
-                            <span>${order.orderId}</span>
-                            <span class="status-badge" style="background:${badgeColor}; margin-right: 10px;">${order.status}</span>
+                            <span style="display:inline-block; width:70px;">${order.orderId}</span>
+                            <span class="status-badge" style="background:${badgeColor}; margin-right:10px;">${order.status}</span>
+                            <span style="color:#7f8c8d; font-size:12px; margin-right:15px;">${extraInfo}</span>
                         </div>
                         <div style="color: #2c3e50;">${order.total} ج.م</div>
                     </div>`;
                 
                 if (isCanceled) canceledHtml += listItem;
-                else listHtml += listItem;
+                else if (isClosed) listHtml += listItem;
             });
 
-            document.getElementById('active-container').innerHTML = activeHtml || "<h3 style='grid-column: 1 / -1; text-align: center; color:#7f8c8d;'>مفيش طلبات حالية. الدرج فاضي!</h3>";
-            document.getElementById('list-container').innerHTML = listHtml || "<p style='text-align:center;'>لا توجد طلبات في هذا الشيفت</p>";
-            document.getElementById('canceled-container').innerHTML = canceledHtml || "<p style='text-align:center;'>الحمد لله مفيش إلغاءات</p>";
+            // تحديث الشاشات
+            document.getElementById('active-container').innerHTML = activeHtml || "<h3 style='grid-column: 1 / -1; text-align: center; color:#7f8c8d; margin-top:50px;'>مفيش طلبات حالية.</h3>";
+            document.getElementById('list-container').innerHTML = listHtml || "<p style='text-align:center;'>لا توجد طلبات مغلقة</p>";
+            document.getElementById('canceled-container').innerHTML = canceledHtml || "<p style='text-align:center;'>لا توجد طلبات ملغية</p>";
             
-            document.getElementById('stat-revenue').innerText = revenue;
-            document.getElementById('stat-count').innerText = count;
+            // تحديث الإحصائيات
+            document.getElementById('stat-total-money').innerText = stats.totalMoney + " ج.م";
+            document.getElementById('stat-total-count').innerText = stats.totalCount;
+            document.getElementById('stat-cash-money').innerText = stats.cashMoney + " ج.م";
+            document.getElementById('stat-cash-count').innerText = stats.cashCount;
+            document.getElementById('stat-visa-money').innerText = stats.visaMoney + " ج.م";
+            document.getElementById('stat-visa-count').innerText = stats.visaCount;
+            document.getElementById('stat-cancel-count').innerText = stats.cancelCount;
         }
 
-        // تحديث حالة الأوردر (يختفي من الشاشة ويروح السجل)
-        function updateOrderStatus(row, newStatus) {
-            if(!confirm("متأكد من الإجراء ده؟")) return;
-            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري التحديث... ⏳</h3>";
-            fetch(`${API_URL}?action=updateOrderStatus&row=${row}&status=${newStatus}`)
+        // ---------- أنظمة الـ Modals ----------
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            currentRow = null;
+        }
+
+        // الدفع
+        function openPaymentModal(row, orderId) {
+            currentRow = row;
+            document.getElementById('pay-order-id').innerText = orderId;
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function submitPayment(method) {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري التقفيل... ⏳</h3>";
+            fetch(`${API_URL}?action=updateOrderStatus&row=${currentRow}&status=${encodeURIComponent('مقفول ✅')}&method=${encodeURIComponent(method)}`)
             .then(res => res.json()).then(data => fetchOrders());
         }
 
-        // تقفيل الشيفت (بيمسح الأوردرات للأرشيف)
-        function endShift() {
-            if(!confirm("⚠️ تحذير: ده هينقل كل الأوردرات الحالية للأرشيف ويبدأ يوم جديد بدرج فاضي. متأكد إنك عايز تقفل الشيفت؟")) return;
+        // الإلغاء
+        function openCancelModal(row, orderId) {
+            currentRow = row;
+            document.getElementById('cancel-order-id').innerText = orderId;
+            document.getElementById('cancel-password').value = "";
+            document.getElementById('cancel-reason').value = "";
+            document.getElementById('cancelModal').style.display = 'flex';
+        }
+
+        function submitCancel() {
+            let pass = document.getElementById('cancel-password').value;
+            let reason = document.getElementById('cancel-reason').value.trim();
             
-            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري ترحيل الأوردرات وتقفيل الشيفت... ⏳</h3>";
-            fetch(`${API_URL}?action=endShift`)
-            .then(res => res.json()).then(data => {
-                alert("تم تقفيل الشيفت بنجاح! يوم جديد سعيد 🏁");
-                fetchOrders();
-            });
+            if (pass !== CANCEL_PASSWORD) return alert("❌ كلمة المرور غير صحيحة!");
+            if (reason === "") return alert("⚠️ يجب كتابة سبب الإلغاء!");
+
+            document.getElementById('cancelModal').style.display = 'none';
+            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري الإلغاء... ⏳</h3>";
+            
+            fetch(`${API_URL}?action=updateOrderStatus&row=${currentRow}&status=${encodeURIComponent('ملغي ❌')}&reason=${encodeURIComponent(reason)}`)
+            .then(res => res.json()).then(data => fetchOrders());
         }
 
-        // التحكم في المنيو
-        function fetchAdminMenu() {
-            document.getElementById('menu-control-container').innerHTML = "<tr><td colspan='3'>جاري التحميل...</td></tr>";
-            fetch(API_URL + "?action=getMenu").then(res => res.json()).then(data => {
-                let html = "";
-                data.forEach(item => {
-                    let btnColor = item.available ? "green" : "red";
-                    let btnText = item.available ? "متاح ✅" : "مقفول ❌";
-                    html += `
-                    <tr>
-                        <td style="font-weight:bold;">${item.name}</td>
-                        <td>${item.price} ج.م</td>
-                        <td>
-                            <button onclick="toggleAvailability(${item.row}, ${!item.available})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">${btnText}</button>
-                        </td>
-                    </tr>`;
-                });
-                document.getElementById('menu-control-container').innerHTML = html;
-            });
-        }
-
-        function toggleAvailability(row, isAvailable) {
-            let status = isAvailable ? "true" : "false";
-            fetch(`${API_URL}?action=toggleMenu&row=${row}&status=${status}`)
-            .then(res => res.json()).then(data => fetchAdminMenu());
-        }
-
-        // نافذة التفاصيل (Modal)
-        function openModal(orderId) {
+        // التفاصيل
+        function openOrderDetails(orderId) {
             let order = allOrders.find(o => o.orderId === orderId);
             if(!order) return;
             
             document.getElementById('modal-title').innerText = `تفاصيل أوردر ${order.orderId}`;
-            document.getElementById('modal-body').innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>الوقت:</strong> ${order.date}</div>
-                <div style="margin-bottom: 10px;"><strong>الترابيزة:</strong> ${order.table}</div>
-                <div style="margin-bottom: 10px;"><strong>الحالة:</strong> ${order.status}</div>
-                <div style="background:#f8fafc; padding:10px; border-radius:5px; margin-bottom:10px; white-space:pre-wrap; border:1px solid #e2e8f0;">${order.details}</div>
-                <h3 style="color:#27ae60; text-align:center;">الإجمالي: ${order.total} ج.م</h3>
+            let detailsHtml = `
+                <div style="margin-bottom: 8px;"><strong>🕒 الوقت:</strong> ${order.date}</div>
+                <div style="margin-bottom: 8px;"><strong>📍 الترابيزة:</strong> ${order.table}</div>
+                <div style="margin-bottom: 8px;"><strong>🚦 الحالة:</strong> ${order.status}</div>
+                ${order.paymentMethod ? `<div style="margin-bottom: 8px; color:var(--success);"><strong>💳 الدفع:</strong> ${order.paymentMethod}</div>` : ''}
+                ${order.cancelReason ? `<div style="margin-bottom: 8px; color:var(--danger);"><strong>📝 سبب الإلغاء:</strong> ${order.cancelReason}</div>` : ''}
+                <div style="background:#f8fafc; padding:10px; border-radius:5px; margin:15px 0; white-space:pre-wrap; border:1px solid #e2e8f0;">${order.details}</div>
+                <h3 style="color:#2c3e50; text-align:center; background:#eee; padding:10px; border-radius:5px;">الإجمالي: ${order.total} ج.م</h3>
             `;
+            document.getElementById('modal-body').innerHTML = detailsHtml;
             document.getElementById('orderModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('orderModal').style.display = 'none';
+        // تقفيل الشيفت
+        function endShift() {
+            if(!confirm("⚠️ تحذير: سيتم نقل جميع الأوردرات وتصفير الدرج لبدء يوم جديد. تأكيد الانتهاء من اليوم؟")) return;
+            
+            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري إنهاء اليوم... ⏳</h3>";
+            fetch(`${API_URL}?action=endShift`)
+            .then(res => res.json()).then(data => {
+                alert("تم الانتهاء من اليوم بنجاح! 🏁");
+                fetchOrders();
+            });
         }
 
-        // Auto Refresh
         window.onload = fetchOrders;
-        setInterval(fetchOrders, 10000); 
     </script>
 </body>
 </html>
