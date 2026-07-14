@@ -3,118 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Cashier POS System</title>
     <style>
-        body { font-family: Tahoma; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
-        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
-        .tabs { margin-top: 20px; display: flex; gap: 10px; }
-        .tab-btn { flex:1; padding: 15px; font-size: 16px; font-weight: bold; background: #bdc3c7; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s;}
-        .tab-btn.active { background: #e74c3c; color: white; }
-        .tab-content { display: none; margin-top: 20px; }
+        :root { --bg: #f0f3f6; --side-bg: #e2e8f0; --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar (زي الصورة اللي بعتها) */
+        .sidebar { width: 100px; background: var(--side-bg); border-left: 2px solid #cbd5e1; display: flex; flex-direction: column; padding: 10px 0; overflow-y: auto; z-index: 10;}
+        .side-btn { background: #f8fafc; border: 1px solid #94a3b8; padding: 15px 5px; margin: 5px 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; color: var(--primary); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.1); transition: 0.2s;}
+        .side-btn:hover { background: #e2e8f0; }
+        .side-btn.active { background: #cbd5e1; border-color: #64748b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
+        .side-btn span.icon { font-size: 24px; }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; }
+        .stats-bar { background: var(--primary); color: white; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 16px;}
+        
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        /* Compact Orders Grid */
+        .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .order-card { background: white; padding: 12px; border-radius: 8px; border-top: 4px solid var(--danger); font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;}
+        .order-card h4 { margin: 0 0 8px 0; font-size: 15px; display: flex; justify-content: space-between;}
+        .order-card .details { background: #f8fafc; padding: 8px; border-radius: 4px; max-height: 70px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 10px; border: 1px solid #e2e8f0;}
         
-        /* Orders Style */
-        .order-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-right: 5px solid #e74c3c;}
-        .order-card.done { border-right-color: #27ae60; opacity: 0.7;}
-        
-        /* Menu Control Style */
-        .menu-table { width: 100%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-collapse: collapse;}
-        .menu-table th, .menu-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
-        .menu-table th { background: #34495e; color: white; }
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #27ae60; }
-        input:checked + .slider:before { transform: translateX(26px); }
+        .action-btns { display: flex; gap: 5px; margin-top: auto;}
+        .btn-sm { flex: 1; padding: 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-done { background: var(--success); }
+        .btn-cancel { background: var(--danger); }
+
+        /* List View (سجل اليوم) */
+        .list-item { background: white; padding: 15px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .list-item:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; color: white; }
+
+        /* Modal (نافذة تفاصيل الأوردر) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 350px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .close-modal { background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; float: left; margin-top: 15px;}
+
+        /* Menu Table */
+        .menu-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; border-collapse: collapse; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .menu-table th, .menu-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        .menu-table th { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>⚙️ لوحة التحكم الذكية</h2>
-        <button onclick="fetchOrders()" style="padding: 10px 20px; border-radius: 5px; cursor:pointer;">تحديث 🔄</button>
+    <!-- الشريط الجانبي (Sidebar) -->
+    <div class="sidebar">
+        <div class="side-btn active" onclick="switchTab('active-orders', this)">
+            <span class="icon">🛎️</span> الطلبات
+        </div>
+        <div class="side-btn" onclick="switchTab('list-orders', this)">
+            <span class="icon">📋</span> السجل
+        </div>
+        <div class="side-btn" onclick="switchTab('canceled-orders', this)">
+            <span class="icon">❌</span> الملغية
+        </div>
+        <div class="side-btn" onclick="switchTab('menu-control', this)">
+            <span class="icon">🧾</span> المنيو
+        </div>
+        <div style="flex-grow: 1;"></div> <!-- مسافة فاضية -->
+        <div class="side-btn" style="background:#fef2f2; border-color:#fca5a5; color:#dc2626;" onclick="endShift()">
+            <span class="icon">🏁</span> تقفيل الشيفت
+        </div>
     </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('orders', this)">🔔 الطلبات الحية</button>
-        <button class="tab-btn" onclick="switchTab('menu-control', this)">🧾 التحكم في المنيو</button>
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- الإحصائيات العلوية -->
+        <div class="stats-bar">
+            <span>مبيعات الدرج اليوم: <span id="stat-revenue" style="color:#f1c40f;">0</span> ج.م</span>
+            <span>إجمالي الأوردرات: <span id="stat-count">0</span> أوردر</span>
+            <button onclick="fetchOrders()" style="background:#34495e; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">تحديث 🔄</button>
+        </div>
+
+        <!-- 1. شاشة الطلبات الحالية (Compact) -->
+        <div id="active-orders" class="tab-content active">
+            <div class="orders-grid" id="active-container">
+                <h3 style="grid-column: 1 / -1; text-align: center;">جاري التحميل... ⏳</h3>
+            </div>
+        </div>
+
+        <!-- 2. شاشة السجل (List) -->
+        <div id="list-orders" class="tab-content">
+            <h3 style="margin-top:0;">📋 كل أوردرات الشيفت الحالي</h3>
+            <div id="list-container"></div>
+        </div>
+
+        <!-- 3. شاشة الملغية -->
+        <div id="canceled-orders" class="tab-content">
+            <h3 style="margin-top:0; color:#e74c3c;">❌ الأوردرات الملغية</h3>
+            <div id="canceled-container"></div>
+        </div>
+
+        <!-- 4. شاشة التحكم في المنيو -->
+        <div id="menu-control" class="tab-content">
+            <table class="menu-table">
+                <thead><tr><th>الصنف</th><th>السعر</th><th>متاح؟</th></tr></thead>
+                <tbody id="menu-control-container"></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- شاشة الأوردرات -->
-    <div id="orders" class="tab-content active">
-        <div id="orders-container"><h3 style="text-align: center;">جاري التحميل...</h3></div>
+    <!-- نافذة تفاصيل الأوردر (Modal) -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">تفاصيل الطلب</h3>
+            <div id="modal-body" style="font-size: 14px; line-height: 1.6;"></div>
+            <button class="close-modal" onclick="closeModal()">إغلاق</button>
+            <div style="clear: both;"></div>
+        </div>
     </div>
 
-    <!-- شاشة التحكم في المنيو -->
-    <div id="menu-control" class="tab-content">
-        <table class="menu-table">
-            <thead><tr><th>الصنف</th><th>السعر</th><th>متاح للزبائن؟</th></tr></thead>
-            <tbody id="menu-control-container"></tbody>
-        </table>
-    </div>
-
-    <!-- صوت الجرس -->
     <audio id="ring" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
         // ⚠️ حط لينك الـ Web App بتاعك هنا
-        const API_URL = "https://script.google.com/macros/s/AKfycbz63wegGtUvTXD1qWPLM_UV1w_hW24jebpz350MvMjsx_kBCuXLILQyF1NHvek8bcLvhA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbz_CqxzDRnWNktco9kEcG21WmvmKw_YtD68gUiGCWhDDvuHPEHi_JkmAmDgUXmxfKnhBA/exec"; 
+        
+        let allOrders = [];
         let lastOrderCount = 0;
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
             if(id === 'menu-control') fetchAdminMenu();
         }
 
-        // جلب الأوردرات وعرضها
         function fetchOrders() {
             fetch(API_URL + "?action=getOrders").then(res => res.json()).then(data => {
-                let html = "";
-                let newOrders = data.filter(o => o.status.includes("جديد"));
+                allOrders = data;
+                renderDashboard();
                 
-                // رن الجرس لو في أوردر جديد
+                // تشغيل الجرس لو في أوردر "جديد"
+                let newOrders = data.filter(o => o.status.includes("جديد"));
                 if (data.length > lastOrderCount && newOrders.length > 0) {
                     document.getElementById('ring').play();
                 }
                 lastOrderCount = data.length;
+            }).catch(e => console.log("Error loading orders"));
+        }
 
-                data.forEach(order => {
-                    let isDone = !order.status.includes("جديد");
-                    html += `
-                    <div class="order-card ${isDone ? 'done' : ''}">
-                        <div style="display:flex; justify-content:space-between;">
-                            <h3>رقم: ${order.orderId} | ترابيزة: ${order.table}</h3>
-                            <span style="font-weight:bold; color: ${isDone?'green':'red'}">${order.status}</span>
+        function renderDashboard() {
+            let activeHtml = "";
+            let listHtml = "";
+            let canceledHtml = "";
+            let revenue = 0;
+            let count = 0;
+
+            allOrders.forEach(order => {
+                let isCanceled = order.status.includes("ملغي");
+                let isClosed = order.status.includes("مقفول") || order.status.includes("دفع");
+                let isActive = !isCanceled && !isClosed;
+
+                // 1. حساب فلوس الدرج (للأوردرات اللي اتقفلت أو اتدفعت بس)
+                if (isClosed) {
+                    revenue += parseFloat(order.total) || 0;
+                }
+                if (!isCanceled) count++;
+
+                // 2. تصميم الكارت الصغير (الطلبات الحالية)
+                if (isActive) {
+                    activeHtml += `
+                    <div class="order-card">
+                        <h4>${order.orderId} <span style="font-size:12px; color:#e74c3c;">${order.status}</span></h4>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 5px;">ترابيزة: ${order.table} | ${order.date.split(',')[1]}</div>
+                        <div class="details">${order.details}</div>
+                        <div style="font-weight:bold; margin-bottom:10px;">السعر: ${order.total} ج.م</div>
+                        <div class="action-btns">
+                            <button class="btn-sm btn-done" onclick="updateOrderStatus(${order.row}, 'مقفول ✅')">تقفيل نقدية ✅</button>
+                            <button class="btn-sm btn-cancel" onclick="updateOrderStatus(${order.row}, 'ملغي ❌')">إلغاء</button>
                         </div>
-                        <p style="white-space: pre-line; background: #f9f9f9; padding: 10px; border-radius:5px;">${order.details}</p>
-                        <h4>الإجمالي: ${order.total} ج.م</h4>
-                        <small style="color:#7f8c8d;">الوقت: ${order.date}</small>
                     </div>`;
-                });
-                document.getElementById('orders-container').innerHTML = html || "<h3 style='text-align:center;'>لا توجد طلبات</h3>";
+                }
+
+                // 3. تصميم السجل (ليست الأوردرات)
+                let badgeColor = isCanceled ? "#e74c3c" : (isClosed ? "#27ae60" : "#f39c12");
+                let listItem = `
+                    <div class="list-item" onclick="openModal('${order.orderId}')">
+                        <div>
+                            <span>${order.orderId}</span>
+                            <span class="status-badge" style="background:${badgeColor}; margin-right: 10px;">${order.status}</span>
+                        </div>
+                        <div style="color: #2c3e50;">${order.total} ج.م</div>
+                    </div>`;
+                
+                if (isCanceled) canceledHtml += listItem;
+                else listHtml += listItem;
+            });
+
+            document.getElementById('active-container').innerHTML = activeHtml || "<h3 style='grid-column: 1 / -1; text-align: center; color:#7f8c8d;'>مفيش طلبات حالية. الدرج فاضي!</h3>";
+            document.getElementById('list-container').innerHTML = listHtml || "<p style='text-align:center;'>لا توجد طلبات في هذا الشيفت</p>";
+            document.getElementById('canceled-container').innerHTML = canceledHtml || "<p style='text-align:center;'>الحمد لله مفيش إلغاءات</p>";
+            
+            document.getElementById('stat-revenue').innerText = revenue;
+            document.getElementById('stat-count').innerText = count;
+        }
+
+        // تحديث حالة الأوردر (يختفي من الشاشة ويروح السجل)
+        function updateOrderStatus(row, newStatus) {
+            if(!confirm("متأكد من الإجراء ده؟")) return;
+            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري التحديث... ⏳</h3>";
+            fetch(`${API_URL}?action=updateOrderStatus&row=${row}&status=${newStatus}`)
+            .then(res => res.json()).then(data => fetchOrders());
+        }
+
+        // تقفيل الشيفت (بيمسح الأوردرات للأرشيف)
+        function endShift() {
+            if(!confirm("⚠️ تحذير: ده هينقل كل الأوردرات الحالية للأرشيف ويبدأ يوم جديد بدرج فاضي. متأكد إنك عايز تقفل الشيفت؟")) return;
+            
+            document.getElementById('active-container').innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center;'>جاري ترحيل الأوردرات وتقفيل الشيفت... ⏳</h3>";
+            fetch(`${API_URL}?action=endShift`)
+            .then(res => res.json()).then(data => {
+                alert("تم تقفيل الشيفت بنجاح! يوم جديد سعيد 🏁");
+                fetchOrders();
             });
         }
 
-        // جلب المنيو للتحكم فيه
+        // التحكم في المنيو
         function fetchAdminMenu() {
             document.getElementById('menu-control-container').innerHTML = "<tr><td colspan='3'>جاري التحميل...</td></tr>";
             fetch(API_URL + "?action=getMenu").then(res => res.json()).then(data => {
                 let html = "";
                 data.forEach(item => {
-                    let isChecked = item.available ? "checked" : "";
+                    let btnColor = item.available ? "green" : "red";
+                    let btnText = item.available ? "متاح ✅" : "مقفول ❌";
                     html += `
                     <tr>
                         <td style="font-weight:bold;">${item.name}</td>
                         <td>${item.price} ج.م</td>
                         <td>
-                            <label class="switch">
-                                <input type="checkbox" ${isChecked} onchange="toggleAvailability(${item.row}, this.checked)">
-                                <span class="slider"></span>
-                            </label>
+                            <button onclick="toggleAvailability(${item.row}, ${!item.available})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">${btnText}</button>
                         </td>
                     </tr>`;
                 });
@@ -122,19 +246,35 @@
             });
         }
 
-        // تغيير حالة الصنف (متاح / غير متاح)
         function toggleAvailability(row, isAvailable) {
             let status = isAvailable ? "true" : "false";
             fetch(`${API_URL}?action=toggleMenu&row=${row}&status=${status}`)
-            .then(res => res.json())
-            .then(data => {
-                console.log("تم التحديث");
-            });
+            .then(res => res.json()).then(data => fetchAdminMenu());
         }
 
-        // تشغيل أوتوماتيك
+        // نافذة التفاصيل (Modal)
+        function openModal(orderId) {
+            let order = allOrders.find(o => o.orderId === orderId);
+            if(!order) return;
+            
+            document.getElementById('modal-title').innerText = `تفاصيل أوردر ${order.orderId}`;
+            document.getElementById('modal-body').innerHTML = `
+                <div style="margin-bottom: 10px;"><strong>الوقت:</strong> ${order.date}</div>
+                <div style="margin-bottom: 10px;"><strong>الترابيزة:</strong> ${order.table}</div>
+                <div style="margin-bottom: 10px;"><strong>الحالة:</strong> ${order.status}</div>
+                <div style="background:#f8fafc; padding:10px; border-radius:5px; margin-bottom:10px; white-space:pre-wrap; border:1px solid #e2e8f0;">${order.details}</div>
+                <h3 style="color:#27ae60; text-align:center;">الإجمالي: ${order.total} ج.م</h3>
+            `;
+            document.getElementById('orderModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        // Auto Refresh
         window.onload = fetchOrders;
-        setInterval(fetchOrders, 10000); // تحديث الأوردرات كل 10 ثواني
+        setInterval(fetchOrders, 10000); 
     </script>
 </body>
 </html>
