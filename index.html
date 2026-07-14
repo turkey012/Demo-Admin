@@ -170,7 +170,7 @@
         </div>
     </div>
 
-    <script>
+  <script>
         // ⚠️ حط لينك الـ Web App بتاعك هنا
         const API_URL = "https://script.google.com/macros/s/AKfycbx6qB9sWTInhWVhTt1lA9Kv2CrnKbx9LtYRcQCd5_nCWDVqe4r4v0SGE-CGY8Bbn6Kvkg/exec"; 
         
@@ -178,7 +178,8 @@
         const CANCEL_PASSWORD = "1234";
 
         let allOrders = [];
-        let currentRow = null; // بيحفظ رقم الصف اللي شغالين عليه
+        let currentRow = null; 
+        let lastOrderCount = 0; // عشان الجرس
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -186,7 +187,6 @@
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
             
-            // تغيير العنوان فوق
             const titles = {
                 'active-orders': 'شاشة الكاشير - الطلبات الحالية',
                 'stats-dashboard': 'لوحة الإحصائيات اليومية',
@@ -196,16 +196,29 @@
             document.getElementById('page-title').innerText = titles[id];
         }
 
-        function fetchOrders() {
+        // 🟢 الدالة بعد التعديل (تحديث صامت وجرس)
+        function fetchOrders(isAuto = false) {
             let btn = document.querySelector('.reload-btn');
-            btn.innerHTML = "⏳ Loading...";
+            if (!isAuto) btn.innerHTML = "⏳ Loading..."; // يكتب تحميل بس لو الكاشير داس بنفسه
+            
             fetch(API_URL + "?action=getOrders").then(res => res.json()).then(data => {
                 allOrders = data;
                 renderDashboard();
-                btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload";
+                if (!isAuto) btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload";
+                
+                // تشغيل الجرس لو فيه أوردر "جديد"
+                let newOrders = data.filter(o => o.status.includes("جديد"));
+                if (data.length > lastOrderCount && newOrders.length > 0) {
+                    let audio = document.getElementById('ring');
+                    if(audio) audio.play().catch(e => console.log("الصوت مقفول من المتصفح"));
+                }
+                lastOrderCount = data.length;
+                
             }).catch(e => {
-                btn.innerHTML = "❌ Error";
-                setTimeout(()=> btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload", 2000);
+                if (!isAuto) {
+                    btn.innerHTML = "❌ Error";
+                    setTimeout(()=> btn.innerHTML = "<span style='font-size: 18px;'>↻</span> Reload", 2000);
+                }
             });
         }
 
@@ -219,7 +232,6 @@
                 let isActive = !isCanceled && !isClosed;
                 let val = parseFloat(order.total) || 0;
 
-                // حساب الإحصائيات
                 if (isCanceled) {
                     stats.cancelCount++;
                 } else if (isClosed) {
@@ -229,7 +241,6 @@
                     else if (order.paymentMethod === "فيزا") { stats.visaCount++; stats.visaMoney += val; }
                 }
 
-                // الكارت الصغير
                 if (isActive) {
                     activeHtml += `
                     <div class="order-card">
@@ -244,7 +255,6 @@
                     </div>`;
                 }
 
-                // الليستة
                 let badgeColor = isCanceled ? "#e74c3c" : (isClosed ? "#27ae60" : "#f39c12");
                 let extraInfo = isCanceled ? `السبب: ${order.cancelReason}` : `دفع: ${order.paymentMethod}`;
                 let listItem = `
@@ -261,12 +271,10 @@
                 else if (isClosed) listHtml += listItem;
             });
 
-            // تحديث الشاشات
             document.getElementById('active-container').innerHTML = activeHtml || "<h3 style='grid-column: 1 / -1; text-align: center; color:#7f8c8d; margin-top:50px;'>مفيش طلبات حالية.</h3>";
             document.getElementById('list-container').innerHTML = listHtml || "<p style='text-align:center;'>لا توجد طلبات مغلقة</p>";
             document.getElementById('canceled-container').innerHTML = canceledHtml || "<p style='text-align:center;'>لا توجد طلبات ملغية</p>";
             
-            // تحديث الإحصائيات
             document.getElementById('stat-total-money').innerText = stats.totalMoney + " ج.م";
             document.getElementById('stat-total-count').innerText = stats.totalCount;
             document.getElementById('stat-cash-money').innerText = stats.cashMoney + " ج.م";
@@ -276,13 +284,11 @@
             document.getElementById('stat-cancel-count').innerText = stats.cancelCount;
         }
 
-        // ---------- أنظمة الـ Modals ----------
         function closeModals() {
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             currentRow = null;
         }
 
-        // الدفع
         function openPaymentModal(row, orderId) {
             currentRow = row;
             document.getElementById('pay-order-id').innerText = orderId;
@@ -296,7 +302,6 @@
             .then(res => res.json()).then(data => fetchOrders());
         }
 
-        // الإلغاء
         function openCancelModal(row, orderId) {
             currentRow = row;
             document.getElementById('cancel-order-id').innerText = orderId;
@@ -319,7 +324,6 @@
             .then(res => res.json()).then(data => fetchOrders());
         }
 
-        // التفاصيل
         function openOrderDetails(orderId) {
             let order = allOrders.find(o => o.orderId === orderId);
             if(!order) return;
@@ -338,7 +342,6 @@
             document.getElementById('orderModal').style.display = 'flex';
         }
 
-        // تقفيل الشيفت
         function endShift() {
             if(!confirm("⚠️ تحذير: سيتم نقل جميع الأوردرات وتصفير الدرج لبدء يوم جديد. تأكيد الانتهاء من اليوم؟")) return;
             
@@ -350,7 +353,12 @@
             });
         }
 
-        window.onload = fetchOrders;
+        // 🟢 التشغيل والتحديث التلقائي
+        window.onload = () => {
+            fetchOrders();
+            // تحديث صامت كل 10 ثواني
+            setInterval(() => fetchOrders(true), 10000); 
+        };
     </script>
 </body>
 </html>
